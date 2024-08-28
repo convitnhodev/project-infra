@@ -29,6 +29,6 @@ spec:
         envFrom: 
         - configMapRef:
           name: notification-hub-config
-        - secretRef:
-          name: notification-hub-secrets
+        # - secretRef:
+        #   name: notification-hub-secrets
         
