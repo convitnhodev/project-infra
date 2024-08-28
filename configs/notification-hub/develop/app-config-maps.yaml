@@ -3,12 +3,7 @@ kind: ConfigMap
 metadata:
   name: notification-hub-config
   namespace: default
-data:
-  ALLOW_ORIGINS: "*"
-  DB_HOST: 10.100.191.117
-  DB_USER: postgres
-  DB_PASS: "mysecretpassword"
-  DB_PORT: "5432"
+data: 
   DB_NAME: notification
 
   FILER_SERVER: "http://localhost:8888"
