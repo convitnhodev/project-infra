@@ -1,0 +1,4 @@
+apiVersion: v2
+name: notification-hub
+description: A Helm chart for deploying the notification hub service
+version: 0.1.0

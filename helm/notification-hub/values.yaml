@@ -1,0 +1,13 @@
+replicaCount: 3
+
+image:
+  repository: 175793575305.dkr.ecr.us-east-1.amazonaws.com/notification-hub
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  name: notification-hub
+  type: ClusterIP
+  port: 8089
+
+resources: {}
