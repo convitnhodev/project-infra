@@ -19,6 +19,17 @@ spec:
         app.kubernetes.io/name: {{ include "notification-hub.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      initContainers:
+      - name: init-config
+        image: busybox
+        command: ['sh', '-c', 'cat /config1/* /config2/* > /merged-config/merged.env']
+        volumeMounts:
+        - name: config-volume1
+          mountPath: /config1
+        - name: config-volume2
+          mountPath: /config2
+        - name: merged-config-volume
+          mountPath: /merged-config
       containers:
       - name: {{ .Values.service.name | default "notification-hub" }}
         image: "{{ .Values.image.repository | default "175793575305.dkr.ecr.us-east-1.amazonaws.com/notification-hub" }}:{{ .Values.image.tag | default "latest" }}"
@@ -27,6 +38,15 @@ spec:
         - containerPort: {{ .Values.service.port | default 8089 }}
         envFrom:
         - configMapRef:
-            name: notification-hub-config
+            name: merged-config
         - secretRef:
             name: notification-hub-secrets
+      volumes:
+      - name: config-volume1
+        configMap:
+          name: notification-hub-config
+      - name: config-volume2
+        configMap:
+          name: common-config
+      - name: merged-config-volume
+        emptyDir: {}
