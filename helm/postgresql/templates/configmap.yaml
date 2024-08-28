@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config
+data:
+  postgresql.conf: |
+    max_connections = 100
+    shared_buffers = 128MB
+    # Add other PostgreSQL configurations here

@@ -22,6 +22,13 @@ spec:
       containers:
       - name: {{ .Values.service.name | default "notification-hub" }}
         image: "{{ .Values.image.repository | default "175793575305.dkr.ecr.us-east-1.amazonaws.com/notification-hub" }}:{{ .Values.image.tag | default "latest" }}"
+        
         imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
         ports:
         - containerPort: {{ .Values.service.port | default 8089 }}
+        envFrom: 
+        - configMapRef:
+          name: notification-hub-config
+        - secretRef:
+          name: notification-hub-secrets
+        

@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: postgres
+  tag: "13"
+  pullPolicy: IfNotPresent
+
+service:
+  name: postgresql
+  type: ClusterIP
+  port: 5432
+  targetPort: 5432
+
+postgresql:
+  username: postgres
+  password: mysecretpassword
+  database: mydatabase
+
+resources: {}
