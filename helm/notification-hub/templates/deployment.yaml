@@ -1,22 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.service.name }}
+  name: {{ include "notification-hub.fullname" . }}
   labels:
-    app: {{ .Values.service.name }}
+    app.kubernetes.io/name: {{ include "notification-hub.name" . }}
+    helm.sh/chart: {{ include "notification-hub.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: Helm
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount | default 1 }}
   selector:
     matchLabels:
-      app: {{ .Values.service.name }}
+      app.kubernetes.io/name: {{ include "notification-hub.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.service.name }}
+        app.kubernetes.io/name: {{ include "notification-hub.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
-      - name: {{ .Values.service.name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+      - name: {{ .Values.service.name | default "notification-hub" }}
+        image: "{{ .Values.image.repository | default "175793575305.dkr.ecr.us-east-1.amazonaws.com/notification-hub" }}:{{ .Values.image.tag | default "latest" }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
         ports:
-        - containerPort: {{ .Values.service.port }}
+        - containerPort: {{ .Values.service.port | default 8089 }}
