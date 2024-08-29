@@ -7,7 +7,7 @@ metadata:
     helm.sh/chart: {{ include "notification-hub.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: Helm
-    chart-tracking: "notification-hub"  # Add this line for tracking
+    chart-tracking: "notification-hub"  # Optional tracking label
 spec:
   replicas: {{ .Values.replicaCount | default 1 }}
   selector:
@@ -19,7 +19,7 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "notification-hub.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
-        chart-tracking: "notification-hub"  # Add this line for tracking
+        chart-tracking: "notification-hub"  # Optional tracking label
     spec:
       initContainers:
       - name: init-config
@@ -38,11 +38,19 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
         ports:
         - containerPort: {{ .Values.service.port | default 8089 }}
+        env:
+        - name: CONFIG_FILE_PATH
+          value: "/merged-config/merged.env"
         envFrom:
         - configMapRef:
-            name: merged-config
+            name: common-config
+        - configMapRef:
+            name: notification-hub-config
         - secretRef:
             name: notification-hub-secrets
+        volumeMounts:
+        - name: merged-config-volume
+          mountPath: /merged-config
       volumes:
       - name: config-volume1
         configMap:
