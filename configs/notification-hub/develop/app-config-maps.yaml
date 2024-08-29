@@ -25,12 +25,6 @@ data:
 
   KETO_READ_URL: "http://localhost:4466"
   KETO_WRITE_URL: "http://localhost:4467"
-  # ALLOW_ORIGINS: "*"
-  # DB_HOST: 10.100.191.117
-  # DB_USER: postgres
-  # DB_PASS: "mysecretpassword"
-  # DB_PORT: "5432"
-  # PORT: "8089"
 
 
 
