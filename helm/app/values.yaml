@@ -1,0 +1,27 @@
+lang: golang
+
+distroless: false
+
+
+log:
+  enabled: false
+  alerts: []
+  # - expr: sum(rate({pod=~"{{ include "app.name" . }}.*", namespace="{{ $.Release.Namespace }}"
+  #     container!="istio-proxy"}[5m])) > 1
+  #   name: HighThroughputLogStreams
+  #   summary: High request latency for app  {{ include "app.name" . }} 
+
+
+  loki:
+    enabled: false
+    endpoint: http://loki-headless.log:3100
+  gcs:
+    enabled: false
+  elasticsearch:
+    enabled: false
+
+
+cronJobs: []
+
+
+jobs: []
