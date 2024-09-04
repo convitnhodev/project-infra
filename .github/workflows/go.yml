@@ -1,4 +1,4 @@
-name: List Changed Directories 
+name: Detect Changed Directories and Trigger Notifications
 
 on:
   push:
@@ -9,8 +9,10 @@ on:
       - main
 
 jobs:
-  list-changes:
+  detect-changes:
     runs-on: ubuntu-latest
+    outputs:
+      changed_dirs: ${{ steps.list_dirs.outputs.changed_dirs }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -27,24 +29,34 @@ jobs:
           CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
           
           # Filter for files within the /configs directory
-          CHANGED_CONFIGS_FILES=$(echo "$CHANGED_FILES" | grep '^configs/' | awk -F/ '{print $1 "/" $2}' | sort -u)
+          CHANGED_CONFIGS_FILES=$(echo "$CHANGED_FILES" | grep '^configs/' | awk -F/ '{print $2}' | sort -u)
 
           echo "Changed directories within /configs:"
           echo "$CHANGED_CONFIGS_FILES"
 
-          # Save changed directories to a file
-          echo "$CHANGED_CONFIGS_FILES" > changed_dirs_in_configs.txt
+          # Set output for use in the next job
+          echo "::set-output name=changed_dirs::$(echo "$CHANGED_CONFIGS_FILES")"
 
-          # Set the list of changed directories as an environment variable
-          echo "CHANGED_CONFIGS_DIRS=$CHANGED_CONFIGS_FILES" >> $GITHUB_ENV
+  trigger-notification-hub:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Print changed directories
+      - name: Trigger notifications for changed directories
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Directories changed within /configs:"
-          echo "${{ env.CHANGED_CONFIGS_DIRS }}"
-
-      - name: Upload changed directories file
-        uses: actions/upload-artifact@v3
-        with:
-          name: changed-configs-directories
-          path: changed_dirs_in_configs.txt
+          # Get the list of changed directories from the previous job
+          CHANGED_DIRS="${{ needs.detect-changes.outputs.changed_dirs }}"
+          
+          # Iterate over each directory and trigger the notification hub
+          for DIR in $CHANGED_DIRS; do
+            echo "Triggering notification for directory: $DIR"
+            curl -X POST \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              https://api.github.com/repos/golang-devops-hungtnv/project-$DIR/dispatches \
+              -d "{\"event_type\":\"directory-changed\", \"client_payload\": {\"directory\": \"$DIR\"}}"
+          done
