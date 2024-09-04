@@ -1,0 +1,41 @@
+name: List Changed Directories
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  list-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Git
+        run: |
+          # Ensure you have the full history for accurate diffs
+          git fetch --prune --unshallow
+
+      - name: List changed directories
+        id: list_dirs
+        run: |
+          # Get the list of changed files between the last commit and the one before it
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          
+          # Extract directories from the list of changed files
+          CHANGED_DIRS=$(echo "$CHANGED_FILES" | awk -F/ '{print $1}' | sort -u)
+          
+          echo "Changed directories:"
+          echo "$CHANGED_DIRS"
+
+          # Set output for use in later steps if needed
+          echo "changed_dirs=$CHANGED_DIRS" >> $GITHUB_ENV
+
+      - name: Print changed directories
+        run: |
+          echo "Directories changed:"
+          echo "${{ env.changed_dirs }}"
