@@ -1,4 +1,4 @@
-name: List Changed Directories
+name: List Changed Directories 
 
 on:
   push:
@@ -20,22 +20,31 @@ jobs:
           # Ensure you have the full history for accurate diffs
           git fetch --prune --unshallow
 
-      - name: List changed directories
+      - name: List changed directories in /configs
         id: list_dirs
         run: |
           # Get the list of changed files between the last commit and the one before it
           CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
           
-          # Extract directories from the list of changed files
-          CHANGED_DIRS=$(echo "$CHANGED_FILES" | awk -F/ '{print $1}' | sort -u)
-          
-          echo "Changed directories:"
-          echo "$CHANGED_DIRS"
+          # Filter for files within the /configs directory
+          CHANGED_CONFIGS_FILES=$(echo "$CHANGED_FILES" | grep '^configs/' | awk -F/ '{print $1 "/" $2}' | sort -u)
 
-          # Set output for use in later steps if needed
-          echo "changed_dirs=$CHANGED_DIRS" >> $GITHUB_ENV
+          echo "Changed directories within /configs:"
+          echo "$CHANGED_CONFIGS_FILES"
+
+          # Save changed directories to a file
+          echo "$CHANGED_CONFIGS_FILES" > changed_dirs_in_configs.txt
+
+          # Set the list of changed directories as an environment variable
+          echo "CHANGED_CONFIGS_DIRS=$CHANGED_CONFIGS_FILES" >> $GITHUB_ENV
 
       - name: Print changed directories
         run: |
-          echo "Directories changed:"
-          echo "${{ env.changed_dirs }}"
+          echo "Directories changed within /configs:"
+          echo "${{ env.CHANGED_CONFIGS_DIRS }}"
+
+      - name: Upload changed directories file
+        uses: actions/upload-artifact@v3
+        with:
+          name: changed-configs-directories
+          path: changed_dirs_in_configs.txt
